@@ -14,14 +14,16 @@ public class Main {
 		Problema p = new Problema("case001.txt");
 		Circulo bruteCircle, randomCircle, geneticCircle;
 		int populationSize = 10;
-		
-		BruteForceAlgorithm b = new BruteForceAlgorithm();
-		bruteCircle = b.BestSolution(p);
-		
-		RandomAlgorithm r = new RandomAlgorithm();
-		randomCircle = r.BestSolution(p);
-		
+//		
+//		BruteForceAlgorithm b = new BruteForceAlgorithm();
+//		bruteCircle = b.BestSolution(p);
+//		
+//		RandomAlgorithm r = new RandomAlgorithm();
+//		randomCircle = r.BestSolution(p);
+//		
 		GeneticAlgorithm genetic = new GeneticAlgorithm(p);
+		genetic.printPopulation();
+		System.out.println("------------------------");
 		geneticCircle = genetic.BestSolution(p);
 		genetic.printPopulation();
 		

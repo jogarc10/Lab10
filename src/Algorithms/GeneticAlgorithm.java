@@ -1,8 +1,6 @@
 package Algorithms;
 
-import java.util.ArrayList;
-import java.util.Random;
-
+import java.util.ArrayList; 
 import main.Circulo;
 import main.Individuo;
 import main.Problema;
@@ -10,6 +8,8 @@ import main.Util;
 
 public class GeneticAlgorithm extends Algorithms {
 	
+	private static final int MAX_GENES = 3; 
+	private static final int CROSS_POINTS = 2; 
 	private static final double CROSSOVER_RATE = 0.7; // Umbral para el emparejamiento 
 	private static final int MAX_GENERATIONS = 5; 
 	private static final int N = 10; // Initial population size
@@ -27,17 +27,23 @@ public class GeneticAlgorithm extends Algorithms {
 		Circulo bestCircle = null;
 		float fitness;
 		float probability[] = new float[N]; /* Probability for each individual to be used: pi = fi / fTotal*/
-		float tmpAccumProbability = 0;
 		float accumProbability[] = new float[N]; 
+		float tmpAccumProbability = 0;
+		String tmpCromosome;
+		float tmpFitness;
 		float totalFitness = 0;
 		int indexChromosomeA, indexChromosomeB; 
-		int newIndividuals = 0;
+		int newIndividual = 0;
+		int crossPoint = 0;
+		String chromosomeA, chromosomeB;
+		ArrayList<Individuo> tmpPopulation;
+		Circulo tmpCircle;
 		
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
 			
 			tmpAccumProbability = 0;
 			totalFitness = sumAllFitness();
-			ArrayList<Individuo> tmpPopulation = new ArrayList<Individuo>();
+			tmpPopulation = new ArrayList<Individuo>();
 			
 			for (int j = 0; j < N; j++) {
 				fitness = this.population.get(j).getFitness();
@@ -46,22 +52,42 @@ public class GeneticAlgorithm extends Algorithms {
 				accumProbability[j] = tmpAccumProbability;
 			}
 
-			newIndividuals = 0;
+			newIndividual = 0;
 			
 			// Iterar hasta que tengamos N nuevos individuos.
-			while (newIndividuals < N) {
+			while (newIndividual < N) {
 							
 				indexChromosomeA = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 1: Llamar Función que te devuelve un indice del cromosoma
 				indexChromosomeB = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 2: Llamar Función que te devuelve un indice del cromosoma
 
-				if (crossChromosomes()) {
-					//validCross(indexChromosomeA, indexChromosomeB)
+//				System.out.println("Index cromo A: " + indexChromosomeA);
+//				System.out.println("Index cromo B: " + indexChromosomeB);
+
+				if (canCrossChromosomes()) {
+//					System.out.println("Cruzando el super cromosoma...");
+					
+					crossPoint = crossPoint();
+					
+					chromosomeA = population.get(indexChromosomeA).getCromosoma();
+					chromosomeB = population.get(indexChromosomeB).getCromosoma();
+
+					tmpCromosome = crossChromosomes(crossPoint, chromosomeA, chromosomeB);
+					
+//					System.out.println("Cromo A: " + chromosomeA);
+//					System.out.println("Cromo B: " + chromosomeB);					
+//					System.out.println("crossPoint: " + crossPoint);
+//					System.out.println("Cromo NP: " + tmpCromosome);
+					
+					tmpCircle = new Circulo(Integer.parseInt(tmpCromosome.substring(0, bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(bitsPerAttribute, 2*bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(2*bitsPerAttribute, 3*bitsPerAttribute), 2));
+					tmpFitness = generateFitness(tmpCircle);		
+					tmpPopulation.add(new Individuo(tmpCromosome, tmpFitness)); 
+					newIndividual += 1;
 				}
 				else {
+//					System.out.println("Va a mutar quien yo te diga...");
 					// Mutar los cromosomas
 				}
-				
-				newIndividuals += 1;
+//				System.out.println("------------------------");
 			}
 			
 			this.population = tmpPopulation; // Assign new population after generated it
@@ -75,8 +101,8 @@ public class GeneticAlgorithm extends Algorithms {
 	 * Roulette: Select a random individual that fills the condition:
 	 */
 	public int selectIndividualIndex(float accumProbability[]) {
-		boolean found = false;
 		int index = 0;
+		boolean found = false;
 		float randomProbability = Util.random(); // [0, 1)
 
 		while (index < N && !found) {
@@ -91,18 +117,50 @@ public class GeneticAlgorithm extends Algorithms {
 		return index;
 	}
 	
-	public boolean crossChromosomes() {
+	public boolean canCrossChromosomes() {
 		float randomProbability = Util.random(); // [0, 1)
-		return randomProbability <= 0.7;
+		return randomProbability <= CROSSOVER_RATE;
+	}
+	
+	public String crossChromosomes(int crossPoint, String chromosomeA, String chromosomeB) {
+		String newChromosome = "";
+		
+//		System.out.println("\tCrossss chromosomes");
+//		System.out.println("\t" + chromosomeA);
+//		System.out.println("\t" + chromosomeB);
+//		
+		newChromosome += chromosomeA.substring(0, crossPoint * bitsPerAttribute);
+		newChromosome += chromosomeB.substring((crossPoint * bitsPerAttribute), MAX_GENES * bitsPerAttribute);
+
+//		System.out.println("\tnewChromosome" + newChromosome);
+		
+		return newChromosome;
+	}
+	
+	// Elegir punto de cruce
+	public int crossPoint() {
+		int index = 0;
+		float a_random, interval, accumProb; 
+		
+		a_random = Util.random(); // [0, 1)
+		interval =  (float) 1/CROSS_POINTS;
+		accumProb = 0;
+		
+		while(a_random > accumProb) {
+			accumProb += interval;
+			index += 1;
+		}
+
+		return index;
 	}
 	
 	// Generating a random population of size N
 	//Returns a list of N individuals
 	public ArrayList<Individuo> generatePopulation(int n_individuals) {
 		
-		int dimension = 2^N;
+		int dimension = (int) Math.pow(2, N);
 		ArrayList<Individuo> new_population = new ArrayList<Individuo>();
-		
+		System.out.println(dimension);
 		for (int i = 0; i < n_individuals; i++) {
 			
 			Circulo randomCircle = Circulo.random(dimension);
