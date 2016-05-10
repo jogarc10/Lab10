@@ -8,17 +8,15 @@ import main.Problema;
 
 public class GeneticAlgorithm extends Algorithms {
 	
-	private int N = 10; // Initial population size
+	private static final int N = 10; // Initial population size
 	private final int bitsPerAttribute = 10; // x, y, z
 	private Individuo population[] = new Individuo[N];
-	
+	private Problema problem;
+
 	/* Constructor: Generate an initial random population */
-	public GeneticAlgorithm(int N) {
-		if (N <= 0) 
-			N = 10; /* By default generate a population of 10 */
-		
-		this.N = N;
-		this.population = generatePopulation(N);
+	public GeneticAlgorithm(Problema p) {
+		this.problem = p;
+		this.population = generatePopulation(GeneticAlgorithm.N);
 	}
 
 	@Override
@@ -30,7 +28,7 @@ public class GeneticAlgorithm extends Algorithms {
 	 * Generating a random population of size N
 	 * Returns a list of N individuals
 	 */
-	public Individuo[] generatePopulation(int n_individuals, Problema p) {
+	public Individuo[] generatePopulation(int n_individuals) {
 		
 		Individuo new_population[] = new Individuo[n_individuals];
 		
@@ -42,17 +40,25 @@ public class GeneticAlgorithm extends Algorithms {
 		
 		return new_population;
 	}
-
+	
 	public String generateChromosome() {
+		int size = 2^this.bitsPerAttribute;
+		Circulo c = Circulo.random(size);
 		String chromosome = "";
-		int lenght = this.bitsPerAttribute; /* Number of bits */
-		
-		chromosome.concat(generateBits(lenght));
-		chromosome.concat(generateBits(lenght));
-		chromosome.concat(generateBits(lenght));
 		
 		return chromosome;
 	}
+	
+//	public String generateChromosome() {
+//		String chromosome = "";
+//		int lenght = this.bitsPerAttribute; /* Number of bits */
+//		
+//		chromosome.concat(generateBits(lenght));
+//		chromosome.concat(generateBits(lenght));
+//		chromosome.concat(generateBits(lenght));
+//		
+//		return chromosome;
+//	}
 	
 	/* 
 	 * Generate a random string of bits given
@@ -90,7 +96,7 @@ public class GeneticAlgorithm extends Algorithms {
 		
 		circle = new Circulo(x, y, radius);
 		
-		
+		chromosome_fitness = 0;
 		
 		return chromosome_fitness;
 	}

@@ -18,7 +18,7 @@ public class Main {
 		RandomAlgorithm r = new RandomAlgorithm();
 		randomCircle = r.BestSolution(p);
 		
-		GeneticAlgorithm genetic = new GeneticAlgorithm(populationSize);
+		GeneticAlgorithm genetic = new GeneticAlgorithm(p);
 		geneticCircle = genetic.BestSolution(p);
 		
 	}
