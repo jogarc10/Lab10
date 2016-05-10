@@ -1,19 +1,25 @@
 package main;
 import java.io.FileNotFoundException;
 
-import Algorithms.BruteForce;
-import Algorithms.RandomMethod;
+import Algorithms.BruteForceAlgorithm;
+import Algorithms.GeneticAlgorithm;
+import Algorithms.RandomAlgorithm;
 
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException {
 		Problema p = new Problema("case001.txt");
-		Circulo brute, random;
+		Circulo bruteCircle, randomCircle, geneticCircle;
+		int populationSize = 10;
 		
-		BruteForce b = new BruteForce();
-		brute = b.BestSolution(p);
-		RandomMethod r = new RandomMethod();
-		random = r.BestSolution(p);
+		BruteForceAlgorithm b = new BruteForceAlgorithm();
+		bruteCircle = b.BestSolution(p);
+		
+		RandomAlgorithm r = new RandomAlgorithm();
+		randomCircle = r.BestSolution(p);
+		
+		GeneticAlgorithm genetic = new GeneticAlgorithm(populationSize);
+		geneticCircle = genetic.BestSolution(p);
 		
 	}
 

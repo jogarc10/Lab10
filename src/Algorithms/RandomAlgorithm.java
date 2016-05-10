@@ -4,7 +4,7 @@ import main.Circulo;
 import main.Problema;
 import main.Util;
 
-public class RandomMethod extends Algorithms{
+public class RandomAlgorithm extends Algorithms{
 	
 	
 	

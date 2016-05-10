@@ -3,7 +3,7 @@ package Algorithms;
 import main.Circulo;
 import main.Problema;
 
-public class BruteForce extends Algorithms{
+public class BruteForceAlgorithm extends Algorithms{
 
 	@Override
 	public Circulo BestSolution(Problema p) {
