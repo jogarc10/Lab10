@@ -25,76 +25,35 @@ public class GeneticAlgorithm extends Algorithms {
 	@Override
 	public Circulo BestSolution(Problema p) {
 		Circulo bestCircle = null;
-		float fitness;
-		float probability[] = new float[N]; /* Probability for each individual to be used: pi = fi / fTotal*/
-		float accumProbability[] = new float[N]; 
-		float tmpAccumProbability = 0;
-		String tmpCromosome;
-		float tmpFitness;
-		float totalFitness = 0;
-		int indexChromosomeA, indexChromosomeB; 
-		int newIndividual = 0;
-		int crossPoint = 0;
-		String chromosomeA, chromosomeB;
-		ArrayList<Individuo> tmpPopulation;
-		Circulo tmpCircle;
+		float totalFitness;
 		
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
 			
-			tmpAccumProbability = 0;
 			totalFitness = sumAllFitness();
-			tmpPopulation = new ArrayList<Individuo>();
-			
-			for (int j = 0; j < N; j++) {
-				fitness = this.population.get(j).getFitness();
-				probability[j] = fitness / totalFitness;
-				tmpAccumProbability += probability[j];
-				accumProbability[j] = tmpAccumProbability;
-			}
-
-			newIndividual = 0;
-			
-			// Iterar hasta que tengamos N nuevos individuos.
-			while (newIndividual < N) {
-							
-				indexChromosomeA = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 1: Llamar Función que te devuelve un indice del cromosoma
-				indexChromosomeB = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 2: Llamar Función que te devuelve un indice del cromosoma
-
-//				System.out.println("Index cromo A: " + indexChromosomeA);
-//				System.out.println("Index cromo B: " + indexChromosomeB);
-
-				if (canCrossChromosomes()) {
-//					System.out.println("Cruzando el super cromosoma...");
-					
-					crossPoint = crossPoint();
-					
-					chromosomeA = population.get(indexChromosomeA).getCromosoma();
-					chromosomeB = population.get(indexChromosomeB).getCromosoma();
-
-					tmpCromosome = crossChromosomes(crossPoint, chromosomeA, chromosomeB);
-					
-//					System.out.println("Cromo A: " + chromosomeA);
-//					System.out.println("Cromo B: " + chromosomeB);					
-//					System.out.println("crossPoint: " + crossPoint);
-//					System.out.println("Cromo NP: " + tmpCromosome);
-					
-					tmpCircle = new Circulo(Integer.parseInt(tmpCromosome.substring(0, bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(bitsPerAttribute, 2*bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(2*bitsPerAttribute, 3*bitsPerAttribute), 2));
-					tmpFitness = generateFitness(tmpCircle);		
-					tmpPopulation.add(new Individuo(tmpCromosome, tmpFitness)); 
-					newIndividual += 1;
-				}
-				else {
-//					System.out.println("Va a mutar quien yo te diga...");
-					// Mutar los cromosomas
-				}
-//				System.out.println("------------------------");
-			}
-			
-			this.population = tmpPopulation; // Assign new population after generated it
-				
+			this.population = generateNewPopulationOf(N, totalFitness); // Assign new population after generated it	
+						
 		}
 		
 		return bestCircle;
+	}
+	
+	/*
+	 * Calculate Probability for each individual to be used: pi = fi / fTotal
+	 */
+	public float[] calculateAccumProbability(float totalFitness) {
+		float accumProbability[] = new float[N];
+		float tmpAccumProbability;
+		float fitness;
+		
+		tmpAccumProbability = 0;
+		
+		for (int j = 0; j < N; j++) {
+			fitness = this.population.get(j).getFitness();
+			tmpAccumProbability += fitness / totalFitness;
+			accumProbability[j] = tmpAccumProbability;
+		}
+		
+		return accumProbability;
 	}
 	
 	/*
@@ -117,6 +76,66 @@ public class GeneticAlgorithm extends Algorithms {
 		return index;
 	}
 	
+	/*
+	 * Cross 2 chromosomes and return a new indivudal
+	 */
+	public Individuo generateCrossedIndividual(int indexChromoA, int indexChromoB) {
+		int crossPoint;
+		float tmpFitness;
+		Circulo tmpCircle;
+		String tmpCromosome, chromosomeA, chromosomeB;
+	
+		crossPoint = crossPoint();
+		
+		chromosomeA = this.population.get(indexChromoA).getCromosoma();
+		chromosomeB = this.population.get(indexChromoB).getCromosoma();
+
+		tmpCromosome = crossChromosomes(crossPoint, chromosomeA, chromosomeB);
+		// TODO: REFACTOR THIS SHIT: TMPCIRCLE
+		tmpCircle = new Circulo(Integer.parseInt(tmpCromosome.substring(0, bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(bitsPerAttribute, 2*bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(2*bitsPerAttribute, 3*bitsPerAttribute), 2));
+		tmpFitness = generateFitness(tmpCircle);
+
+		return new Individuo(tmpCromosome, tmpFitness);
+	}
+	
+	
+	public ArrayList<Individuo> generateNewPopulationOf(int size, float totalFitness) {
+		int insertedIndivuduals;
+		float accumProbability[];
+
+		int indexChromosomeA;
+		int indexChromosomeB;
+		
+		Individuo newCrossedIndividual;
+		ArrayList<Individuo> newPopulation = new ArrayList<Individuo>();
+		
+	
+		accumProbability = calculateAccumProbability(totalFitness); 
+		
+		insertedIndivuduals = 0;
+		
+		// Iterar hasta que tengamos N nuevos individuos.
+		while (insertedIndivuduals < size) {
+						
+			indexChromosomeA = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 1: Llamar Función que te devuelve un indice del cromosoma
+			indexChromosomeB = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 2: Llamar Función que te devuelve un indice del cromosoma
+
+			if (canCrossChromosomes()) {
+				newCrossedIndividual = generateCrossedIndividual(indexChromosomeA, indexChromosomeB);
+				newPopulation.add(newCrossedIndividual);
+				insertedIndivuduals += 1;
+			}
+			else {
+				// TODO: Mutate chromosomes
+				// System.out.println("Va a mutar quien yo te diga...");
+				// Mutar los cromosomas
+			}
+		}
+		
+		return newPopulation;
+	}
+	
+	
 	public boolean canCrossChromosomes() {
 		float randomProbability = Util.random(); // [0, 1)
 		return randomProbability <= CROSSOVER_RATE;
@@ -125,15 +144,9 @@ public class GeneticAlgorithm extends Algorithms {
 	public String crossChromosomes(int crossPoint, String chromosomeA, String chromosomeB) {
 		String newChromosome = "";
 		
-//		System.out.println("\tCrossss chromosomes");
-//		System.out.println("\t" + chromosomeA);
-//		System.out.println("\t" + chromosomeB);
-//		
 		newChromosome += chromosomeA.substring(0, crossPoint * bitsPerAttribute);
 		newChromosome += chromosomeB.substring((crossPoint * bitsPerAttribute), MAX_GENES * bitsPerAttribute);
 
-//		System.out.println("\tnewChromosome" + newChromosome);
-		
 		return newChromosome;
 	}
 	
