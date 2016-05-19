@@ -1,6 +1,9 @@
 package Algorithms;
 
 import java.util.ArrayList; 
+import java.util.Iterator;
+import java.util.PriorityQueue;
+
 import main.Circulo;
 import main.Individuo;
 import main.Problema;
@@ -8,46 +11,91 @@ import main.Util;
 
 public class GeneticAlgorithm extends Algorithms {
 	
-	private static final int MAX_GENES = 3; 
-	private static final int CROSS_POINTS = 2; 
-	private static final double CROSSOVER_RATE = 0.7; // Umbral para el emparejamiento 
+	private static final int GENES_NUMBER = 3;  // Total number of genes
+	private static final int GEN_DIMENSION = 10; // Dimension for each gene
 	private static final int MAX_GENERATIONS = 5; 
-	private static final int N = 10; // Initial population size
-	private final int bitsPerAttribute = 10; // x, y, z
-	private ArrayList<Individuo> population = new ArrayList<Individuo>();
+	private static final int POPULATION_SIZE = 10; // Initial population size
+	private PriorityQueue<Individuo> population = new PriorityQueue<Individuo>();
 	private Problema problem;
 
 	public GeneticAlgorithm(Problema p) {
 		this.problem = p;
-		this.population = generatePopulation(GeneticAlgorithm.N);
+		this.population = generateInitialPopulation();
 	}
+	
+	/*
+	 * Generating a random population of size N
+	 * Returns a priority queue of N individuals
+	 */
+	private PriorityQueue<Individuo> generateInitialPopulation() {
+		PriorityQueue<Individuo> new_population = new PriorityQueue<Individuo>();
+		int dimension = (int) Math.pow(2, GEN_DIMENSION); // maximum radio
 
+		for (int i = 0; i < POPULATION_SIZE; i++) {
+			Circulo randomCircle = Circulo.random(dimension);
+			Individuo newIndividual = new Individuo(randomCircle);
+			newIndividual.setFitness(generateFitness(randomCircle));
+			new_population.add(newIndividual);
+		}
+		
+		return new_population;
+	}
+	 
 	@Override
 	public Circulo BestSolution(Problema p) {
-		Circulo bestCircle = null;
-		float totalFitness;
+		Circulo bestCircle = new Circulo(0, 0, 0);
+		Individuo bestGenerationIndividual;
 		
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
-			
-			totalFitness = sumAllFitness();
-			this.population = generateNewPopulationOf(N, totalFitness); // Assign new population after generated it	
-						
+			generateAndUpdateNewPopulation(); // Assign new population after generated it
+			// TODO: Cada nueva generacion coger el mejor circulo
+			// Si el circulo es mejor que el encontrado hasta la fecha, actualizarlo.
+			bestGenerationIndividual = this.population.peek();
 		}
 		
 		return bestCircle;
 	}
 	
+
+	public void generateAndUpdateNewPopulation() {
+		int createdChromosomes = 0;
+		PriorityQueue<Individuo> newPopulation = new PriorityQueue<Individuo>();
+		float[] accumProbability = new float[POPULATION_SIZE];
+		float totalFitness = sumAllFitness();
+		
+		while (newPopulation.size() < POPULATION_SIZE) {
+			
+			accumProbability = calculateAccumProbability(totalFitness); 
+			Pair newPair = pickCouples(accumProbability); // returns list of size 2 chromosomes to work with them
+			
+			newPair.cross();  
+			newPair.mutate();
+			
+			newPopulation.addAll(newPair.toList());
+			// Calculate Fitness
+		}
+		
+		this.population = newPopulation;
+	}
+	
+	
+	
+	private Pair pickCouples(float[] accumProbability) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	/*
 	 * Calculate Probability for each individual to be used: pi = fi / fTotal
 	 */
 	public float[] calculateAccumProbability(float totalFitness) {
-		float accumProbability[] = new float[N];
+		float accumProbability[] = new float[POPULATION_SIZE];
 		float tmpAccumProbability;
 		float fitness;
 		
 		tmpAccumProbability = 0;
 		
-		for (int j = 0; j < N; j++) {
+		for (int j = 0; j < POPULATION_SIZE; j++) {
 			fitness = this.population.get(j).getFitness();
 			tmpAccumProbability += fitness / totalFitness;
 			accumProbability[j] = tmpAccumProbability;
@@ -64,7 +112,7 @@ public class GeneticAlgorithm extends Algorithms {
 		boolean found = false;
 		float randomProbability = Util.random(); // [0, 1)
 
-		while (index < N && !found) {
+		while (index < POPULATION_SIZE && !found) {
 			if (accumProbability[index] < randomProbability) {
 				index++;
 			}	
@@ -90,8 +138,8 @@ public class GeneticAlgorithm extends Algorithms {
 		chromosomeA = this.population.get(indexChromoA).getCromosoma();
 		chromosomeB = this.population.get(indexChromoB).getCromosoma();
 
-		tmpCromosome = crossChromosomes(crossPoint, chromosomeA, chromosomeB);
 		// TODO: REFACTOR THIS SHIT: TMPCIRCLE
+		tmpCromosome = crossChromosomes(crossPoint, chromosomeA, chromosomeB);
 		tmpCircle = new Circulo(Integer.parseInt(tmpCromosome.substring(0, bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(bitsPerAttribute, 2*bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(2*bitsPerAttribute, 3*bitsPerAttribute), 2));
 		tmpFitness = generateFitness(tmpCircle);
 
@@ -99,6 +147,8 @@ public class GeneticAlgorithm extends Algorithms {
 	}
 	
 	
+	
+	/*
 	public ArrayList<Individuo> generateNewPopulationOf(int size, float totalFitness) {
 		int insertedIndivuduals;
 		float accumProbability[];
@@ -134,58 +184,9 @@ public class GeneticAlgorithm extends Algorithms {
 		
 		return newPopulation;
 	}
-	
-	
-	public boolean canCrossChromosomes() {
-		float randomProbability = Util.random(); // [0, 1)
-		return randomProbability <= CROSSOVER_RATE;
-	}
-	
-	public String crossChromosomes(int crossPoint, String chromosomeA, String chromosomeB) {
-		String newChromosome = "";
+	*/
 		
-		newChromosome += chromosomeA.substring(0, crossPoint * bitsPerAttribute);
-		newChromosome += chromosomeB.substring((crossPoint * bitsPerAttribute), MAX_GENES * bitsPerAttribute);
-
-		return newChromosome;
-	}
-	
-	// Elegir punto de cruce
-	public int crossPoint() {
-		int index = 0;
-		float a_random, interval, accumProb; 
-		
-		a_random = Util.random(); // [0, 1)
-		interval =  (float) 1/CROSS_POINTS;
-		accumProb = 0;
-		
-		while(a_random > accumProb) {
-			accumProb += interval;
-			index += 1;
-		}
-
-		return index;
-	}
-	
-	// Generating a random population of size N
-	//Returns a list of N individuals
-	public ArrayList<Individuo> generatePopulation(int n_individuals) {
-		
-		int dimension = (int) Math.pow(2, N);
-		ArrayList<Individuo> new_population = new ArrayList<Individuo>();
-		System.out.println(dimension);
-		for (int i = 0; i < n_individuals; i++) {
-			
-			Circulo randomCircle = Circulo.random(dimension);
-			Individuo newIndividual = new Individuo(randomCircle);
-			newIndividual.setFitness(generateFitness(randomCircle));
-			new_population.add(newIndividual);
-		}
-		
-		return new_population;
-	}
-	
-	public float generateFitness(Circulo c) {
+	private float generateFitness(Circulo c) {
 		if (this.problem.esSolucion(c)) {
 			return (float) c.getRadio();
 		} else {
@@ -195,11 +196,12 @@ public class GeneticAlgorithm extends Algorithms {
 	
 	public void printPopulation() {
 		String individual = "";
-		for (int i = 0; i < N; i++) {
+		
+		for (Individuo e : population) {
 			individual = "Cromosoma: ";
-			individual += population.get(i).getCromosoma();
+			individual += e.getCromosoma();
 			individual += " | Fitness: ";
-			individual += population.get(i).getFitness();
+			individual += e.getFitness();
 			System.out.println(individual);
 		}
 	}
@@ -207,9 +209,11 @@ public class GeneticAlgorithm extends Algorithms {
 	// Sum all the individuals fitness score 
 	public float sumAllFitness() {
 		float total = 0;
-		for (int i = 0; i < N; i++) {
-			total += this.population.get(i).getFitness();
+
+		for (Individuo e : population) {
+			total += e.getFitness();
 		}
+		
 		return total;
 	}
 	
