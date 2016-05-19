@@ -23,14 +23,33 @@ public class Individuo implements Comparable<Individuo> {
 		this.cromosoma = cromosoma;
 		this.fitness = fitness;
 	}
-
+	
 	/**
 	 * Constructor a partir del círculo.
 	 */
 	public Individuo(Circulo c) {
 		cromosoma = int2str(c.getX()) + int2str(c.getY()) + int2str(c.getRadio());
 	}
+
+	// Get substring
+
+	public String getChromosomeStart(int crossPoint) {
+		return this.cromosoma.substring(0, crossPoint);
+	}
 	
+	public String getChromosomeEnd(int crossPoint) {
+		return this.cromosoma.substring(crossPoint);
+	}
+	
+	public void swapBit(int index) {
+		StringBuilder myCromosoma = new StringBuilder(this.cromosoma);
+		
+		if (this.cromosoma.charAt(index) == '1')
+			myCromosoma.setCharAt(index, '0');
+		else
+			myCromosoma.setCharAt(index, '1');
+	}
+
 	/**
 	 * Devuelve el círculo representado por este cromosoma.
 	 */
