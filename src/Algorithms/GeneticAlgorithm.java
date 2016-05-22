@@ -1,6 +1,7 @@
 package Algorithms;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
@@ -17,7 +18,9 @@ public class GeneticAlgorithm extends Algorithms {
 	private static final int MAX_GENERATIONS = 5;
 	private static final int POPULATION_SIZE = 10; // Initial population size
 	private PriorityQueue<Individuo> population = new PriorityQueue<Individuo>();
+	private float[] populationProbability = new float[POPULATION_SIZE];
 	private Problema problem;
+	private float totalFitness;
 
 	public GeneticAlgorithm(Problema p) {
 		this.problem = p;
@@ -37,6 +40,7 @@ public class GeneticAlgorithm extends Algorithms {
 			Individuo newIndividual = new Individuo(randomCircle);
 			newIndividual.setFitness(generateFitness(randomCircle));
 			new_population.add(newIndividual);
+			// TODO: Update probability.
 		}
 
 		return new_population;
@@ -61,18 +65,22 @@ public class GeneticAlgorithm extends Algorithms {
 		int createdChromosomes = 0;
 		PriorityQueue<Individuo> newPopulation = new PriorityQueue<Individuo>();
 		float[] accumProbability = new float[POPULATION_SIZE];
-		float totalFitness = sumAllFitness();
+		float totalFitness;
+		Pair newPair;
+		
+		this.totalFitness = sumAllFitness();
+		updatePopulationProbability(); // TODO
+		
 
 		// Merge population
 		while (newPopulation.size() < POPULATION_SIZE - ELITE_SIZE) {
 
-			accumProbability = calculateAccumProbability(totalFitness);
-			Pair newPair = pickCouples(accumProbability); // returns list of size 2 chromosomes to work with them
+			newPair = pickCouples(); // returns list of size 2 chromosomes to work with them
 
-			newPair.cross();
-			newPair.mutate();
-			newPair.calculateFitness();
-			newPopulation.addAll(newPair.toList());
+//			newPair.cross();
+//			newPair.mutate();
+//			newPair.calculateFitness();
+//			newPopulation.addAll(newPair.toList());
 		}
 
 		// Get elite from old population and add it to new population
@@ -86,15 +94,42 @@ public class GeneticAlgorithm extends Algorithms {
 
 		this.population = newPopulation;
 	}
+	
+	/*
+	 *  Sum all the individuals fitness score
+	 */
+	public float sumAllFitness() {
+		float total = 0;
 
-	private Pair pickCouples(float[] accumProbability) {
-		// TODO Auto-generated method stub
-		return null;
+		for (Individuo e : population) {
+			total += e.getFitness();
+		}
+
+		return total;
 	}
 
 	/*
 	 * Calculate Probability for each individual to be used: pi = fi / fTotal
 	 */
+	
+	public void updatePopulationProbability() {
+		// http://stackoverflow.com/questions/8129122/how-to-iterate-over-a-priorityqueue
+		// float[] newProbability = Arrays.sort(population.toArray());
+		for (Individuo e: this.population) {
+			System.out.println(e);
+			System.out.println(e.getCromosoma());
+			System.out.println(e.getFitness());
+			System.out.println("----");
+			// fitness / this.totalFitness;
+		}
+	}
+
+	private Pair pickCouples() {
+		// this.population
+		return null;
+	}
+
+	/*
 	public float[] calculateAccumProbability(float totalFitness) {
 		float accumProbability[] = new float[POPULATION_SIZE];
 		float tmpAccumProbability;
@@ -110,6 +145,7 @@ public class GeneticAlgorithm extends Algorithms {
 
 		return accumProbability;
 	}
+	*/
 
 	/*
 	 * Roulette: Select a random individual that fills the condition:
@@ -130,69 +166,7 @@ public class GeneticAlgorithm extends Algorithms {
 
 		return index;
 	}
-
-	/*
-	 * Cross 2 chromosomes and return a new indivudal
-	 */
-	public Individuo generateCrossedIndividual(int indexChromoA, int indexChromoB) {
-		int crossPoint;
-		float tmpFitness;
-		Circulo tmpCircle;
-		String tmpCromosome, chromosomeA, chromosomeB;
-
-		crossPoint = crossPoint();
-
-		chromosomeA = this.population.get(indexChromoA).getCromosoma();
-		chromosomeB = this.population.get(indexChromoB).getCromosoma();
-
-		// TODO: REFACTOR THIS SHIT: TMPCIRCLE
-		tmpCromosome = crossChromosomes(crossPoint, chromosomeA, chromosomeB);
-		tmpCircle = new Circulo(Integer.parseInt(tmpCromosome.substring(0, bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(bitsPerAttribute, 2*bitsPerAttribute), 2),Integer.parseInt(tmpCromosome.substring(2*bitsPerAttribute, 3*bitsPerAttribute), 2));
-		tmpFitness = generateFitness(tmpCircle);
-
-		return new Individuo(tmpCromosome, tmpFitness);
-	}
-
-
-
-	/*
-	public ArrayList<Individuo> generateNewPopulationOf(int size, float totalFitness) {
-		int insertedIndivuduals;
-		float accumProbability[];
-
-		int indexChromosomeA;
-		int indexChromosomeB;
-
-		Individuo newCrossedIndividual;
-		ArrayList<Individuo> newPopulation = new ArrayList<Individuo>();
-
-
-		accumProbability = calculateAccumProbability(totalFitness);
-
-		insertedIndivuduals = 0;
-
-		// Iterar hasta que tengamos N nuevos individuos.
-		while (insertedIndivuduals < size) {
-
-			indexChromosomeA = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 1: Llamar Funci�n que te devuelve un indice del cromosoma
-			indexChromosomeB = selectIndividualIndex(accumProbability); // Indice aleatorio del cromosoma 2: Llamar Funci�n que te devuelve un indice del cromosoma
-
-			if (canCrossChromosomes()) {
-				newCrossedIndividual = generateCrossedIndividual(indexChromosomeA, indexChromosomeB);
-				newPopulation.add(newCrossedIndividual);
-				insertedIndivuduals += 1;
-			}
-			else {
-				// TODO: Mutate chromosomes
-				// System.out.println("Va a mutar quien yo te diga...");
-				// Mutar los cromosomas
-			}
-		}
-
-		return newPopulation;
-	}
-	*/
-
+	
 	private float generateFitness(Circulo c) {
 		if (this.problem.esSolucion(c)) {
 			return (float) c.getRadio();
@@ -211,17 +185,6 @@ public class GeneticAlgorithm extends Algorithms {
 			individual += e.getFitness();
 			System.out.println(individual);
 		}
-	}
-
-	// Sum all the individuals fitness score
-	public float sumAllFitness() {
-		float total = 0;
-
-		for (Individuo e : population) {
-			total += e.getFitness();
-		}
-
-		return total;
 	}
 
 }

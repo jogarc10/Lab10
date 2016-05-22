@@ -2,6 +2,7 @@ package Algorithms;
 
 import java.util.Vector;
 
+import main.Circulo;
 import main.Individuo;
 import main.Util;
 

@@ -29,6 +29,7 @@ public class Problema {
 	 * Lee un problema a partir de un fichero de texto. 
 	 */
 	public Problema(String fichero) throws FileNotFoundException {
+		
 		Scanner sc = new Scanner(new File(fichero));
 		circulos = new ArrayList<>();
 		
