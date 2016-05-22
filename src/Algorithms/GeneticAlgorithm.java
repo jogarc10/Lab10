@@ -44,7 +44,6 @@ public class GeneticAlgorithm extends Algorithms {
 			new_population.add(newIndividual);
 		}
 		
-		// TODO: Update probability.
 		updateProbabilities();
 				
 		return new_population;
@@ -52,27 +51,24 @@ public class GeneticAlgorithm extends Algorithms {
 
 	@Override
 	public Circulo BestSolution(Problema p) {
-		Circulo bestCircle = new Circulo(0, 0, 0);
-		Circulo generationBestCircle = new Circulo(0, 0, 0);
-		Individuo generationBestIndividual;
-
+		Individuo bestIndividual;
+		Circulo bestSolution = new Circulo(0, 0, 0);
+		
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
-			
-			System.out.println("GENERATING " + i + " POPULATION");
-			
-			generateAndUpdateNewPopulation(); // Assign new population after generated it
-			
-			generationBestIndividual = this.population.peek();
-			generationBestCircle = generationBestIndividual.toCirculo();
-			
-			if (generationBestCircle.getRadio() > bestCircle.getRadio()) {
-				bestCircle = generationBestCircle;
-			}
-			
-			System.out.println("-----------");
+			generateAndUpdateNewPopulation();
+			 printPopulation();
 		}
-
-		return bestCircle;
+		
+		 System.out.println("---");
+		 printPopulation();
+		
+		bestIndividual = this.population.peek();
+	
+		if (bestIndividual.getFitness() > bestSolution.getRadio()) {
+			bestSolution = bestIndividual.toCirculo();
+		}
+		
+		return bestSolution;
 	}
 	
 	public void generateAndUpdateNewPopulation() {
@@ -94,14 +90,16 @@ public class GeneticAlgorithm extends Algorithms {
 		}
 
 		// Get elite from old population and add it to new population
+	
 		Individuo topEliteElement;
+		// System.out.println("Elite");
+			
 		
-		System.out.println("Elite");
 		for (int i = 0; i < ELITE_SIZE; i++) {
 			if (population.size() > 0) {
 				topEliteElement = population.poll();
-				System.out.println(topEliteElement);
 				newPopulation.add(topEliteElement);
+				// System.out.println(topEliteElement);
 			}
 		}
 
@@ -185,7 +183,7 @@ public class GeneticAlgorithm extends Algorithms {
 		String individual = "";
 
 		for (Individuo e : population) {
-			individual = "Cromosoma: ";
+			individual = "\tCromosoma: ";
 			individual += e.getCromosoma();
 			individual += " | Fitness: ";
 			individual += e.getFitness();
