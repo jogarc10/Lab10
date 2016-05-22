@@ -18,8 +18,12 @@ public class Main {
 		
 		System.out.println("------------------------");
 		
-		geneticCircle = genetic.BestSolution(p);
+		geneticCircle = genetic.BestSolution(p);		
 		genetic.printPopulation();
+		
+		System.out.println("");
+		System.out.println("Best circle: " + geneticCircle.toString());
+		
 		
 	}
 

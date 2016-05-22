@@ -99,7 +99,6 @@ public class Pair {
 		for (int i = 0; i < this.individuals.length; i++) {
 			for (int bit_index = 0; bit_index < bitsPerChromosome; bit_index++) {
 				if (canMutate()) {
-					System.out.println("Penes mutados pa todos");
 					this.individuals[i].swapBit(bit_index);
 				}
 			}

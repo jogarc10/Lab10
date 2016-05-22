@@ -16,15 +16,16 @@ public class GeneticAlgorithm extends Algorithms {
 	private static final int ELITE_SIZE = 4;
 	private static final int GENES_NUMBER = 3;  // Total number of genes
 	private static final int GEN_DIMENSION = 10; // Dimension for each gene
-	private static final int MAX_GENERATIONS = 10;
+	private static final int MAX_GENERATIONS = 100;
 	private static final int POPULATION_SIZE = 10; // Initial population size
 	private PriorityQueue<Individuo> population = new PriorityQueue<Individuo>();
 	private float[] populationProbability = new float[POPULATION_SIZE];
 	public static Problema problem;
 	private float totalFitness;
+	private Object[] individualsArray;
 
 	public GeneticAlgorithm(Problema p) {
-		this.problem = p;
+		GeneticAlgorithm.problem = p;
 		this.population = generateInitialPopulation();
 	}
 
@@ -41,36 +42,45 @@ public class GeneticAlgorithm extends Algorithms {
 			Individuo newIndividual = new Individuo(randomCircle);
 			newIndividual.setFitness(generateFitness(randomCircle));
 			new_population.add(newIndividual);
-			// TODO: Update probability.
 		}
-
+		
+		// TODO: Update probability.
+		updateProbabilities();
+				
 		return new_population;
 	}
 
 	@Override
 	public Circulo BestSolution(Problema p) {
 		Circulo bestCircle = new Circulo(0, 0, 0);
-		Individuo bestGenerationIndividual;
+		Circulo generationBestCircle = new Circulo(0, 0, 0);
+		Individuo generationBestIndividual;
 
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
+			
+			System.out.println("GENERATING " + i + " POPULATION");
+			
 			generateAndUpdateNewPopulation(); // Assign new population after generated it
-			// TODO: Cada nueva generacion coger el mejor circulo
-			// Si el circulo es mejor que el encontrado hasta la fecha, actualizarlo.
-			bestGenerationIndividual = this.population.peek();
+			
+			generationBestIndividual = this.population.peek();
+			generationBestCircle = generationBestIndividual.toCirculo();
+			
+			if (generationBestCircle.getRadio() > bestCircle.getRadio()) {
+				bestCircle = generationBestCircle;
+			}
+			
+			System.out.println("-----------");
 		}
 
 		return bestCircle;
 	}
-
+	
 	public void generateAndUpdateNewPopulation() {
-		int createdChromosomes = 0;
 		PriorityQueue<Individuo> newPopulation = new PriorityQueue<Individuo>();
-		float[] accumProbability = new float[POPULATION_SIZE];
-		float totalFitness;
 		Pair newPair;
 		
 		this.totalFitness = sumAllFitness();
-//		updateProbabilities(); // TODO
+		updateProbabilities(); // TODO
 
 		// Merge population
 		while (newPopulation.size() < POPULATION_SIZE - ELITE_SIZE) {
@@ -85,9 +95,12 @@ public class GeneticAlgorithm extends Algorithms {
 
 		// Get elite from old population and add it to new population
 		Individuo topEliteElement;
+		
+		System.out.println("Elite");
 		for (int i = 0; i < ELITE_SIZE; i++) {
 			if (population.size() > 0) {
 				topEliteElement = population.poll();
+				System.out.println(topEliteElement);
 				newPopulation.add(topEliteElement);
 			}
 		}
@@ -107,60 +120,57 @@ public class GeneticAlgorithm extends Algorithms {
 
 		return total;
 	}
-
-	/*
-	 * Calculate Probability for each individual to be used: pi = fi / fTotal
-	 * and returns 2 Individuals
-	 */
 	
-	public Pair routlettePickCouple() {
-		Individuo[] pickedCouple = new Individuo[2]; 
+	
+	/*
+	 * Iterate through the Priority queue and
+	 * Calculate Probability for each individual to be used: pi = fi / fTotal
+	 */
+	public void updateProbabilities() {
 		float tmpAccumProbability = 0;
-		float fitness;
-		Object[] individualsArray = this.population.toArray();
-		
-		boolean found = false;
-		
 		Individuo tmpIndividual;
 		
+		this.individualsArray = this.population.toArray();
+
 		// Calculate probabilities
-		for (int i = 0; i < individualsArray.length; i++) {
-			tmpIndividual = (Individuo) individualsArray[i];
-			fitness = tmpIndividual.getFitness();
-			tmpAccumProbability += fitness / this.totalFitness;
+		for (int i = 0; i < this.individualsArray.length; i++) {
+			
+			tmpIndividual = (Individuo) this.individualsArray[i];
+			tmpAccumProbability += tmpIndividual.getFitness() / this.totalFitness;
 			this.populationProbability[i] = tmpAccumProbability;
-			
-			System.out.println("Individual" + i);
-			System.out.println(tmpIndividual);
-			
 		}
+	}
+	
+	/*
+	 * Returns 2 Individuals taking into account the probabilities
+	 */
+	public Pair routlettePickCouple() {
 		
-		System.out.println("----");
-		System.out.println("Picking elements...");
-		
-		// Routlete.
 		int index;
 		float randomProbability; // [0, 1)
+		Individuo[] pickedCouple = new Individuo[2];
+		
+//		System.out.println("Picking elements...");
 		
 		for (int pairIndex = 0; pairIndex < 2; pairIndex++) {
 			randomProbability = Util.random();
 			index = 0;
-			while (index < POPULATION_SIZE && !found) {
-				if (this.populationProbability[index] < randomProbability) {
-					index++;
-				}
-				else {
-					found = true;
-				}
+			
+			while (index < POPULATION_SIZE && populationProbability[index] < randomProbability) {
+				index++;
 			}
-//			System.out.prinln()
-			pickedCouple[pairIndex] = (Individuo) individualsArray[index];
+			
+//			if (index == POPULATION_SIZE) {
+//				index--;
+//			}
+//			
+//			System.out.println("PairIndex" + pairIndex);
+//			System.out.println("Index" + index);
+
+			pickedCouple[pairIndex] = (Individuo) this.individualsArray[index];
 		}
 		
-		System.out.println("YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-		System.out.println("-----------------------------------------------");
-		
-		return new Pair(pickedCouple[0], pickedCouple[1]);
+		return new Pair(new Individuo(pickedCouple[0]), new Individuo(pickedCouple[1]));
 	}
 
 	private float generateFitness(Circulo c) {

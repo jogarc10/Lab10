@@ -24,6 +24,11 @@ public class Individuo implements Comparable<Individuo> {
 		this.fitness = fitness;
 	}
 	
+	public Individuo(Individuo ind) {
+		this.cromosoma = ind.cromosoma;
+		this.fitness = ind.fitness;
+	}
+	
 	/**
 	 * Constructor a partir del círculo.
 	 */
@@ -43,17 +48,13 @@ public class Individuo implements Comparable<Individuo> {
 	
 	public void swapBit(int index) {
 		StringBuilder myCromosoma = new StringBuilder(this.cromosoma);
-		
-		 System.out.println("Index: " + index);
-		 System.out.println("OLD: " + this.cromosoma);
-		
+
 		if (this.cromosoma.charAt(index) == '1')
 			myCromosoma.setCharAt(index, '0');
 		else
 			myCromosoma.setCharAt(index, '1');
 		
 		this.cromosoma = myCromosoma.toString();
-		 System.out.println("NEW: " + this.cromosoma);
 	}
 
 	/**
@@ -91,7 +92,7 @@ public class Individuo implements Comparable<Individuo> {
 	 */
 	@Override
 	public int compareTo(Individuo o) {
-		return Float.compare(fitness, o.fitness);
+		return Float.compare(o.fitness, fitness);
 	}
 
 	@Override
