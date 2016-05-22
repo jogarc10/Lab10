@@ -14,10 +14,9 @@ import main.Util;
 public class GeneticAlgorithm extends Algorithms {
 
 	private static final int ELITE_SIZE = 4;
-	private static final int GENES_NUMBER = 3;  // Total number of genes
 	private static final int GEN_DIMENSION = 10; // Dimension for each gene
-	private static final int MAX_GENERATIONS = 100;
-	private static final int POPULATION_SIZE = 10; // Initial population size
+	private static final int MAX_GENERATIONS = 200;
+	private static final int POPULATION_SIZE = 100; // Initial population size
 	private PriorityQueue<Individuo> population = new PriorityQueue<Individuo>();
 	private float[] populationProbability = new float[POPULATION_SIZE];
 	public static Problema problem;
@@ -56,11 +55,8 @@ public class GeneticAlgorithm extends Algorithms {
 		
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
 			generateAndUpdateNewPopulation();
-			 printPopulation();
+//			 printPopulation();
 		}
-		
-		 System.out.println("---");
-		 printPopulation();
 		
 		bestIndividual = this.population.peek();
 	
@@ -82,7 +78,6 @@ public class GeneticAlgorithm extends Algorithms {
 		while (newPopulation.size() < POPULATION_SIZE - ELITE_SIZE) {
 			
 			newPair = routlettePickCouple();
-			
 			newPair.cross();
 			newPair.mutate();
 			newPair.calculateFitness();
@@ -90,10 +85,7 @@ public class GeneticAlgorithm extends Algorithms {
 		}
 
 		// Get elite from old population and add it to new population
-	
-		Individuo topEliteElement;
-		// System.out.println("Elite");
-			
+		Individuo topEliteElement;			
 		
 		for (int i = 0; i < ELITE_SIZE; i++) {
 			if (population.size() > 0) {
@@ -132,7 +124,6 @@ public class GeneticAlgorithm extends Algorithms {
 
 		// Calculate probabilities
 		for (int i = 0; i < this.individualsArray.length; i++) {
-			
 			tmpIndividual = (Individuo) this.individualsArray[i];
 			tmpAccumProbability += tmpIndividual.getFitness() / this.totalFitness;
 			this.populationProbability[i] = tmpAccumProbability;
@@ -147,9 +138,7 @@ public class GeneticAlgorithm extends Algorithms {
 		int index;
 		float randomProbability; // [0, 1)
 		Individuo[] pickedCouple = new Individuo[2];
-		
-//		System.out.println("Picking elements...");
-		
+
 		for (int pairIndex = 0; pairIndex < 2; pairIndex++) {
 			randomProbability = Util.random();
 			index = 0;
@@ -158,13 +147,6 @@ public class GeneticAlgorithm extends Algorithms {
 				index++;
 			}
 			
-//			if (index == POPULATION_SIZE) {
-//				index--;
-//			}
-//			
-//			System.out.println("PairIndex" + pairIndex);
-//			System.out.println("Index" + index);
-
 			pickedCouple[pairIndex] = (Individuo) this.individualsArray[index];
 		}
 		
