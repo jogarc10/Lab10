@@ -55,7 +55,6 @@ public class GeneticAlgorithm extends Algorithms {
 		
 		for (int i = 0; i < MAX_GENERATIONS; i++) {
 			generateAndUpdateNewPopulation();
-//			 printPopulation();
 		}
 		
 		bestIndividual = this.population.peek();
