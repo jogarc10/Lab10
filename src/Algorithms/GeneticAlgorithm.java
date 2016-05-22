@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.PriorityQueue;
+import java.util.Vector;
 
 import main.Circulo;
 import main.Individuo;
@@ -69,18 +70,17 @@ public class GeneticAlgorithm extends Algorithms {
 		Pair newPair;
 		
 		this.totalFitness = sumAllFitness();
-		updatePopulationProbability(); // TODO
-		
+//		updateProbabilities(); // TODO
 
 		// Merge population
 		while (newPopulation.size() < POPULATION_SIZE - ELITE_SIZE) {
-
-			newPair = pickCouples(); // returns list of size 2 chromosomes to work with them
-
-//			newPair.cross();
-//			newPair.mutate();
-//			newPair.calculateFitness();
-//			newPopulation.addAll(newPair.toList());
+			
+			newPair = routlettePickCouple();
+			
+			newPair.cross();
+			newPair.mutate();
+			newPair.calculateFitness();
+			newPopulation.addAll(newPair.toList());
 		}
 
 		// Get elite from old population and add it to new population
@@ -110,63 +110,58 @@ public class GeneticAlgorithm extends Algorithms {
 
 	/*
 	 * Calculate Probability for each individual to be used: pi = fi / fTotal
+	 * and returns 2 Individuals
 	 */
 	
-	public void updatePopulationProbability() {
-		// http://stackoverflow.com/questions/8129122/how-to-iterate-over-a-priorityqueue
-		// float[] newProbability = Arrays.sort(population.toArray());
-		for (Individuo e: this.population) {
-			System.out.println(e);
-			System.out.println(e.getCromosoma());
-			System.out.println(e.getFitness());
-			System.out.println("----");
-			// fitness / this.totalFitness;
-		}
-	}
-
-	private Pair pickCouples() {
-		// this.population
-		return null;
-	}
-
-	/*
-	public float[] calculateAccumProbability(float totalFitness) {
-		float accumProbability[] = new float[POPULATION_SIZE];
-		float tmpAccumProbability;
+	public Pair routlettePickCouple() {
+		Individuo[] pickedCouple = new Individuo[2]; 
+		float tmpAccumProbability = 0;
 		float fitness;
-
-		tmpAccumProbability = 0;
-
-		for (int j = 0; j < POPULATION_SIZE; j++) {
-			fitness = this.population.get(j).getFitness();
-			tmpAccumProbability += fitness / totalFitness;
-			accumProbability[j] = tmpAccumProbability;
-		}
-
-		return accumProbability;
-	}
-	*/
-
-	/*
-	 * Roulette: Select a random individual that fills the condition:
-	 */
-	public int selectIndividualIndex(float accumProbability[]) {
-		int index = 0;
+		Object[] individualsArray = this.population.toArray();
+		
 		boolean found = false;
-		float randomProbability = Util.random(); // [0, 1)
-
-		while (index < POPULATION_SIZE && !found) {
-			if (accumProbability[index] < randomProbability) {
-				index++;
-			}
-			else {
-				found = true;
-			}
+		
+		Individuo tmpIndividual;
+		
+		// Calculate probabilities
+		for (int i = 0; i < individualsArray.length; i++) {
+			tmpIndividual = (Individuo) individualsArray[i];
+			fitness = tmpIndividual.getFitness();
+			tmpAccumProbability += fitness / this.totalFitness;
+			this.populationProbability[i] = tmpAccumProbability;
+			
+			System.out.println("Individual" + i);
+			System.out.println(tmpIndividual);
+			
 		}
-
-		return index;
+		
+		System.out.println("----");
+		System.out.println("Picking elements...");
+		
+		// Routlete.
+		int index;
+		float randomProbability; // [0, 1)
+		
+		for (int pairIndex = 0; pairIndex < 2; pairIndex++) {
+			randomProbability = Util.random();
+			index = 0;
+			while (index < POPULATION_SIZE && !found) {
+				if (this.populationProbability[index] < randomProbability) {
+					index++;
+				}
+				else {
+					found = true;
+				}
+			}
+			pickedCouple[pairIndex] = (Individuo) individualsArray[index];
+		}
+		
+		System.out.println("YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+		System.out.println("-----------------------------------------------");
+		
+		return new Pair(pickedCouple[0], pickedCouple[1]);
 	}
-	
+
 	private float generateFitness(Circulo c) {
 		if (this.problem.esSolucion(c)) {
 			return (float) c.getRadio();
