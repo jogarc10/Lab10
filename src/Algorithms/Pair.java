@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import main.Circulo;
 import main.Individuo;
+import main.Problema;
 import main.Util;
 
 public class Pair {
@@ -57,12 +58,35 @@ public class Pair {
 
 	public void calculateFitness() {
 		Circulo tmpCircle;
-		float tmpRadio;
+		float tmpRadio, newFitness;
 		for (int i = 0; i < this.individuals.length; i++) {
 			tmpCircle = this.individuals[i].toCirculo();
-			tmpRadio = (float) tmpCircle.getRadio();
-			this.individuals[i].setFitness(tmpRadio);
+			
+			if (isValidCircle(tmpCircle)) {
+				tmpRadio = (float) tmpCircle.getRadio();
+				newFitness = tmpRadio;
+			}
+			else {
+				newFitness = 0;
+			}
+			
+			this.individuals[i].setFitness(newFitness);
 		}
+	}
+	
+	public boolean isValidCircle(Circulo c) {
+		
+		// Está dentro del cuadrado
+		if (!c.dentroDeCuadrado(Problema.DIMENSION))
+			return false;
+		
+		// No tiene intersección con los otros círculos
+		for (Circulo circulo: GeneticAlgorithm.problem.getCirculos()) {
+			if (circulo.interseccion(c))
+				return false;
+		}
+		
+		return true;
 	}
 
 	/*************************

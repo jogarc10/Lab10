@@ -16,11 +16,11 @@ public class GeneticAlgorithm extends Algorithms {
 	private static final int ELITE_SIZE = 4;
 	private static final int GENES_NUMBER = 3;  // Total number of genes
 	private static final int GEN_DIMENSION = 10; // Dimension for each gene
-	private static final int MAX_GENERATIONS = 100;
+	private static final int MAX_GENERATIONS = 10;
 	private static final int POPULATION_SIZE = 10; // Initial population size
 	private PriorityQueue<Individuo> population = new PriorityQueue<Individuo>();
 	private float[] populationProbability = new float[POPULATION_SIZE];
-	private Problema problem;
+	public static Problema problem;
 	private float totalFitness;
 
 	public GeneticAlgorithm(Problema p) {
@@ -153,6 +153,7 @@ public class GeneticAlgorithm extends Algorithms {
 					found = true;
 				}
 			}
+//			System.out.prinln()
 			pickedCouple[pairIndex] = (Individuo) individualsArray[index];
 		}
 		

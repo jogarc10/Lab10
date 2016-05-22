@@ -44,8 +44,8 @@ public class Individuo implements Comparable<Individuo> {
 	public void swapBit(int index) {
 		StringBuilder myCromosoma = new StringBuilder(this.cromosoma);
 		
-		// System.out.println("Index: " + index);
-		// System.out.println("OLD: " + this.cromosoma);
+		 System.out.println("Index: " + index);
+		 System.out.println("OLD: " + this.cromosoma);
 		
 		if (this.cromosoma.charAt(index) == '1')
 			myCromosoma.setCharAt(index, '0');
@@ -53,7 +53,7 @@ public class Individuo implements Comparable<Individuo> {
 			myCromosoma.setCharAt(index, '1');
 		
 		this.cromosoma = myCromosoma.toString();
-		// System.out.println("NEW: " + this.cromosoma);
+		 System.out.println("NEW: " + this.cromosoma);
 	}
 
 	/**
